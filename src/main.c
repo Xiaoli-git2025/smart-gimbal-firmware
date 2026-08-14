@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -20,9 +22,36 @@ void uart_print(const char* str) {
     }
 }
 
+// 1. 触发 Cppcheck 内存泄漏 (Memory Leak) 的测试函数
+void test_memory_leak_bug(void) {
+    char *log_buffer = (char *)malloc(128);
+    sprintf(log_buffer, "Testing memory leak for CodeOps");
+    uart_print(log_buffer);
+    // 故意不调用 free(log_buffer); 
+}
+
+// 2. 触发 RAG 硬件手册/寄存器违规的测试函数
+#define PWM_CONTROL_REG (*(volatile unsigned int*)0x10010000)
+void test_hardware_rag_bug(void) {
+    // 写入一个超出手册规定或非法的寄存器极限值
+    PWM_CONTROL_REG = 0xFFFFFFFF; 
+}
+
+// 3. 触发数组越界 (Array Index Out of Bounds) 的测试函数
+static volatile uint32_t motor_calibration_table[4];
+void test_array_bounds_bug(int index, uint32_t val) {
+    // 当 index 传入 4 时触发越界，可被 Cppcheck 捕捉，并可能与 RAG 内存映射冲突
+    motor_calibration_table[index] = val; 
+}
+
 // 任务 1：云台控制线程
 void vGimbalControlTask(void *pvParameters) {
     (void) pvParameters;
+
+    // 测试调用（让代码 diff 产生变动）
+    test_memory_leak_bug();
+    test_hardware_rag_bug();
+    test_array_bounds_bug(4, 100); // 触发越界
     for (;;) {
         uart_print("[Core 0 - Gimbal]: Adjusting PWM\r\n");
         vTaskDelay(pdMS_TO_TICKS(100)); // 延时 100ms
