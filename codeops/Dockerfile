@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /workspace
 
 # 复制 entrypoint 脚本到容器内
-COPY entrypoint.sh /codeops/entrypoint.sh
+COPY codeops/entrypoint.sh /codeops/entrypoint.sh
 RUN chmod +x /codeops/entrypoint.sh
 
 # 设置容器默认入口
