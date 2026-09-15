@@ -24,11 +24,12 @@ void uart_print(const char* str) {
 
 // 1. 触发 Cppcheck 内存泄漏 (Memory Leak) 的测试函数
 void test_memory_leak_bug(void) {
-    char *log_buffer = (char *)malloc(128);
-    sprintf(log_buffer, "Testing memory leak for CodeOps");
-    uart_print(log_buffer);
-    // 故意不调用 free(log_buffer); 
-    free(log_buffer);
+    char *log_buffer = (char *)pvPortMalloc(128);
+    if (log_buffer != NULL) {
+        uart_print("Testing memory leak for CodeOps\r\n");
+        // 故意注释掉 vPortFree(log_buffer); 就能完美触发 Cppcheck 的内存泄漏检查
+        // vPortFree(log_buffer); 
+    }
 }
 
 // 2. 触发 RAG 硬件手册/寄存器违规的测试函数
