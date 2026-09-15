@@ -13,6 +13,8 @@ WORKDIR /workspace
 # 复制 entrypoint 脚本到容器内
 COPY codeops/entrypoint.sh /codeops/entrypoint.sh
 RUN chmod +x /codeops/entrypoint.sh
+# 加上下面这行，用 tr 或 dos2unix 暴力清除 Windows 换行符
+RUN sed -i 's/\r$//' /codeops/entrypoint.sh
 
 # 设置容器默认入口
 ENTRYPOINT ["/codeops/entrypoint.sh"]
