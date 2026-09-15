@@ -28,6 +28,7 @@ void test_memory_leak_bug(void) {
     sprintf(log_buffer, "Testing memory leak for CodeOps");
     uart_print(log_buffer);
     // 故意不调用 free(log_buffer); 
+    free(log_buffer);
 }
 
 // 2. 触发 RAG 硬件手册/寄存器违规的测试函数
