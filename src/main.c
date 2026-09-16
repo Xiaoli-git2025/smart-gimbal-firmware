@@ -28,7 +28,7 @@ void test_memory_leak_bug(void) {
     if (log_buffer != NULL) {
         uart_print("Testing memory leak for CodeOps\r\n");
         // 故意注释掉 vPortFree(log_buffer); 就能完美触发 Cppcheck 的内存泄漏检查
-        //vPortFree(log_buffer); 
+        vPortFree(log_buffer); 
     }
 }
 
