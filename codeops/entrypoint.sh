@@ -14,5 +14,19 @@ QEMU_AUDIO_DRV=none timeout 3 qemu-system-arm -M realview-pbx-a9 -m 256M -smp 2 
 
 echo "=== [CodeOps]: Simulation finished. Running Python assertions ==="
 
-# 3. 调用你写好的 serial_assert.py 进行自动化行为断言
-python3 codeops/serial_assert.py qemu_output.log
+# 3. 调用 serial_assert.py 进行自动化行为断言
+if python3 codeops/serial_assert.py qemu_output.log; then
+    echo "=== [CodeOps]: HIL Assertion Passed! ==="
+    TEST_STATUS="success"
+    EXIT_CODE=0
+else
+    echo "=== [CodeOps]: HIL Assertion Failed! ==="
+    TEST_STATUS="failure"
+    EXIT_CODE=1
+fi
+
+# 4. 【新增】结果回传与闭环通知 (Result Callback)
+# 树莓派 Agent 可以通过捕获容器执行的退出码或日志来感知结果。
+echo "=== [CodeOps]: Pipeline finished with status: $TEST_STATUS ==="
+
+exit $EXIT_CODE
