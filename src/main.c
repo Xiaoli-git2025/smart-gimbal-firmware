@@ -52,7 +52,7 @@ void vGimbalControlTask(void *pvParameters) {
 
     // 测试调用（让代码 diff 产生变动）
     test_memory_leak_bug();
-    test_hardware_rag_bug();
+    //test_hardware_rag_bug();
     //test_array_bounds_bug(4, 100); // 触发越界
     for (;;) {
         uart_print("[Core 0 - Gimbal]: Adjusting PWM\r\n");
