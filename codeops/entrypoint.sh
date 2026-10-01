@@ -25,7 +25,7 @@ else
     EXIT_CODE=1
 fi
 
-# 4. 结果回传, 实现闭环通知 (Result Callback)
+# 4. 结果回传实现闭环通知 (Result Callback)
 # 树莓派 Agent 可以通过捕获容器执行的退出码或日志来感知结果。
 echo "=== [CodeOps]: Pipeline finished with status: $TEST_STATUS ==="
 
