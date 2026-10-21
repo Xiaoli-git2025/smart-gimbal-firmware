@@ -28,7 +28,7 @@ void test_memory_leak_bug(void) {
     if (log_buffer != NULL) {
         uart_print("Testing memory leak for CodeOps\r\n");
         // 故意注释掉 vPortFree(log_buffer); 就能完美触发 Cppcheck 的内存泄漏检查
-        vPortFree(log_buffer); 
+        //vPortFree(log_buffer); 
     }
 }
 
@@ -52,8 +52,8 @@ void vGimbalControlTask(void *pvParameters) {
 
     // 测试调用（让代码 diff 产生变动）
     test_memory_leak_bug();
-    //test_hardware_rag_bug();
-    //test_array_bounds_bug(4, 100); // 触发越界
+    test_hardware_rag_bug();
+    test_array_bounds_bug(4, 100); // 触发越界
     for (;;) {
         uart_print("[Core 0 - Gimbal]: Adjusting PWM\r\n");
         vTaskDelay(pdMS_TO_TICKS(100)); // 延时 100ms
