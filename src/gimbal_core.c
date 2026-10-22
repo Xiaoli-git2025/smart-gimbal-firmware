@@ -7,14 +7,29 @@ void master_gimbal_task(void) {
     int loop_counter = 0;
     while (1) {
         loop_counter++;
+        
         // 模拟高频实时控制循环 (例如 1kHz 姿态调整)
         if (loop_counter % 300000 == 0) {
             local_print("[Core 0 - Control]: Reading IMU -> Adjusting PID motors...\r\n");
         }
         
-        // 模拟兼顾调度从核的视觉数据
-        if (loop_counter == 900000) {
-            local_print("[Core 0 - Inter-Core]: Syncing bounding box with Vision Core...\r\n");
+        // =========================================================================
+        // 【BUG 引入点 - Memory Leak】
+        // 模拟兼顾调度从核的视觉数据：动态分配内存用于存放接收到的同步数据包，
+        // 但在处理完同步逻辑后，忘记调用 free(packet) 释放堆内存！
+        // 每当 loop_counter 达到 900000 的倍数时，就会泄漏一块内存，直至 Heap 耗尽崩溃。
+        // =========================================================================
+        if (loop_counter % 900000 == 0) {
+            VisionSyncPacket_t *packet = (VisionSyncPacket_t *)malloc(sizeof(VisionSyncPacket_t));
+            if (packet != NULL) {
+                packet->bbox_x = 120;
+                packet->bbox_y = 240;
+                packet->timestamp = loop_counter;
+                
+                local_print("[Core 0 - Inter-Core]: Syncing bounding box with Vision Core...\r\n");
+                
+                // 处理完 packet 后漏掉了 free(packet); !!!
+            }
         }
     }
 }
