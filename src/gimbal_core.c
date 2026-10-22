@@ -1,3 +1,5 @@
+#include <stdint.h>  // <--- 确保加上这一行，提供 int32_t 等类型定义
+#include <stdlib.h>  // 如果用到了 malloc/free，也需要这个
 #define UART0_DR (*(volatile unsigned int*)0x09000000)
 static void local_print(const char* str) { while (*str != '\0') { UART0_DR = *str; str++; } }
 
