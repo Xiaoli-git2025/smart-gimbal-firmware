@@ -1,7 +1,21 @@
-#include <stdint.h>  // <--- 确保加上这一行，提供 int32_t 等类型定义
-#include <stdlib.h>  // 如果用到了 malloc/free，也需要这个
+#include <stdint.h>  // 提供 int32_t 等类型定义
+#include <stdlib.h>  // 提供 malloc/free
+
 #define UART0_DR (*(volatile unsigned int*)0x09000000)
-static void local_print(const char* str) { while (*str != '\0') { UART0_DR = *str; str++; } }
+
+// 修正了参数类型和多余的减号
+static void local_print(const char *str) { 
+    while (*str != '\0') { 
+        UART0_DR = *str; 
+        str++; 
+    } 
+}
+
+typedef struct {
+    int32_t bbox_x;
+    int32_t bbox_y;
+    uint32_t timestamp;
+} VisionSyncPacket_t;
 
 void master_gimbal_task(void) {
     local_print("[Core 0 - Control]: Gimbal PID & IMU loop started.\r\n");
@@ -15,10 +29,10 @@ void master_gimbal_task(void) {
             local_print("[Core 0 - Control]: Reading IMU -> Adjusting PID motors...\r\n");
         }
         
+        // =========================================================================
         // 【BUG 引入点 - Memory Leak】
-        // 模拟兼顾调度从核的视觉数据：动态分配内存用于存放接收到的同步数据包，
-        // 但在处理完同步逻辑后，忘记调用 free(packet) 释放堆内存！
-        // 每当 loop_counter 达到 900000 的倍数时，就会泄漏一块内存，直至 Heap 耗尽崩溃。
+        // 每次循环到 900000 的倍数时，动态申请一块堆内存，但故意不释放 (free)
+        // =========================================================================
         if (loop_counter % 900000 == 0) {
             VisionSyncPacket_t *packet = (VisionSyncPacket_t *)malloc(sizeof(VisionSyncPacket_t));
             if (packet != NULL) {
@@ -28,7 +42,7 @@ void master_gimbal_task(void) {
                 
                 local_print("[Core 0 - Inter-Core]: Syncing bounding box with Vision Core...\r\n");
                 
-                // 处理完 packet 后漏掉了 free(packet); !!!
+                // 故意漏掉了 free(packet); 造成内存泄漏！
             }
         }
     }
