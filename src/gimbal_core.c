@@ -20,7 +20,7 @@ void master_gimbal_task(void) {
         if (loop_counter % 900000 == 0) {
             VisionSyncPacket_t *packet = (VisionSyncPacket_t *)malloc(sizeof(VisionSyncPacket_t));
             if (packet != NULL) {
-                packet->bbox_x = 120;
+                packet->bbox_x = 150;
                 packet->bbox_y = 240;
                 packet->timestamp = loop_counter;
                 
