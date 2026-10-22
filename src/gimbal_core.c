@@ -17,6 +17,10 @@ typedef struct {
     uint32_t timestamp;
 } VisionSyncPacket_t;
 
+#define MAX_TRACKING_OBJECTS 100
+static VisionSyncPacket_t g_packet_pool[MAX_TRACKING_OBJECTS];
+static int g_allocated_count = 0;
+
 void master_gimbal_task(void) {
     local_print("[Core 0 - Control]: Gimbal PID & IMU loop started.\r\n");
     
@@ -24,25 +28,22 @@ void master_gimbal_task(void) {
     while (1) {
         loop_counter++;
         
-        // 模拟高频实时控制循环 (例如 1kHz 姿态调整)
         if (loop_counter % 300000 == 0) {
             local_print("[Core 0 - Control]: Reading IMU -> Adjusting PID motors...\r\n");
         }
         
-        // =========================================================================
-        // 【BUG 引入点 - Memory Leak】
-        // 每次循环到 900000 的倍数时，动态申请一块堆内存，但故意不释放 (free)
-        // =========================================================================
+        // 【裸机版“内存泄漏”模拟】：不断从静态池中申请槽位，但从不重置 count
         if (loop_counter % 900000 == 0) {
-            VisionSyncPacket_t *packet = (VisionSyncPacket_t *)malloc(sizeof(VisionSyncPacket_t));
-            if (packet != NULL) {
+            if (g_allocated_count < MAX_TRACKING_OBJECTS) {
+                VisionSyncPacket_t *packet = &g_packet_pool[g_allocated_count];
                 packet->bbox_x = 150;
                 packet->bbox_y = 240;
                 packet->timestamp = loop_counter;
                 
-                local_print("[Core 0 - Inter-Core]: Syncing bounding box with Vision Core...\r\n");
-                
-                // 故意漏掉了 free(packet); 造成内存泄漏！
+                g_allocated_count++; // 占用增加，永不释放，直到池子耗尽！
+                local_print("[Core 0 - Inter-Core]: Syncing bounding box (Pool slot allocated)...\r\n");
+            } else {
+                local_print("[Core 0 - Error]: Packet pool exhausted (Leak simulation full)!\r\n");
             }
         }
     }
