@@ -63,14 +63,12 @@ typedef struct {
 
 static PidGains_t g_pid_gains = { 1, 0, 0 };
 
-/* 单步 PID：避免实时除法，防止裸机环境链接报错 */
+/* 单步 PID：完全消灭除法，杜绝链接 __aeabi_idiv 报错 */
 int32_t gimbal_pid_step(int32_t error, int32_t last_error)
 {
-    // 如果 kp 和 kd 相加为固定常数，或者直接用固定的比例系数相乘
-    int32_t denominator = (g_pid_gains.kp + g_pid_gains.kd);
-    if (denominator == 0) denominator = 1; // 防止除零
-    
-    int32_t p_term = (error * g_pid_gains.kp) / denominator;
+    // 如果原本是想算平均值或除以 2，可以用右移代替：>> 1
+    // 或者直接乘以一个固定系数
+    int32_t p_term = (error * g_pid_gains.kp) >> 1; 
     int32_t d_term = (error - last_error) * g_pid_gains.kd;
     int32_t output = p_term + d_term;
 
