@@ -13,12 +13,10 @@ void master_gimbal_task(void) {
             local_print("[Core 0 - Control]: Reading IMU -> Adjusting PID motors...\r\n");
         }
         
-        // ========================================================================
         // 【BUG 引入点 - Memory Leak】
         // 模拟兼顾调度从核的视觉数据：动态分配内存用于存放接收到的同步数据包，
         // 但在处理完同步逻辑后，忘记调用 free(packet) 释放堆内存！
         // 每当 loop_counter 达到 900000 的倍数时，就会泄漏一块内存，直至 Heap 耗尽崩溃。
-        // ========================================================================
         if (loop_counter % 900000 == 0) {
             VisionSyncPacket_t *packet = (VisionSyncPacket_t *)malloc(sizeof(VisionSyncPacket_t));
             if (packet != NULL) {
