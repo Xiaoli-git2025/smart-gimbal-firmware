@@ -36,7 +36,7 @@ void master_gimbal_task(void) {
         if (loop_counter % 900000 == 0) {
             if (g_allocated_count < MAX_TRACKING_OBJECTS) {
                 VisionSyncPacket_t *packet = &g_packet_pool[g_allocated_count];
-                packet->bbox_x = 150;
+                packet->bbox_x = 120;
                 packet->bbox_y = 240;
                 packet->timestamp = loop_counter;
                 
