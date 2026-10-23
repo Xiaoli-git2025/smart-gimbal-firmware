@@ -34,6 +34,7 @@ void master_gimbal_task(void) {
         
         // 【裸机版“内存泄漏”模拟】：不断从静态池中申请槽位，但从不重置 count
         if (loop_counter % 900000 == 0) {
+            loop_counter = 0;
             if (g_allocated_count < MAX_TRACKING_OBJECTS) {
                 VisionSyncPacket_t *packet = &g_packet_pool[g_allocated_count];
                 packet->bbox_x = 120;
